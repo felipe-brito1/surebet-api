@@ -12,10 +12,12 @@ import java.util.Map;
 public class SurebetService {
     private final OddsApiClient oddsApiClient;
     private final SurebetCalculator surebetCalculator;
+    private final StakeCalculator stakeCalculator;
 
-    public SurebetService(OddsApiClient oddsApiClient, SurebetCalculator surebetCalculator) {
+    public SurebetService(OddsApiClient oddsApiClient, SurebetCalculator surebetCalculator, StakeCalculator stakeCalculator) {
         this.oddsApiClient = oddsApiClient;
         this.surebetCalculator = surebetCalculator;
+        this.stakeCalculator = stakeCalculator;
     }
 
     public FixtureOdds getOdds(String fixtureId) {
@@ -61,6 +63,17 @@ public class SurebetService {
         FixtureOdds fixtureOdds = getOdds(fixtureId);
         List<MarketOdds> marketOdds = marketOddsList(fixtureOdds);
         return surebetCalculator.surebetCalculator(marketOdds);
+    }
+
+    public List<StakeResult> calculateStake(String fixtureId, double total){
+        List<SurebetOportunity> surebets = findSurebets(fixtureId);
+        List<StakeResult> result = new ArrayList<>();
+
+        for(SurebetOportunity opportunity : surebets){
+            result.add(stakeCalculator.calculate(opportunity, total));
+        }
+
+        return result;
     }
 
 
