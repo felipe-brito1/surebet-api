@@ -2,13 +2,11 @@ package com.felipebrito.surebet_api.model;
 
 import lombok.Data;
 
+import java.util.Map;
+
 @Data
 public class SurebetOportunity {
-    private String bookmakerHome;
-    private String bookmakerDraw;
-    private String bookmakerAway;
-    private double homeOdds;
-    private double drawOdds;
-    private double awayOdds;
-    private double margin ;
+    private Map<String, String> bookmakers;
+    private Map<String, Double> outcomes;
+    private double margin;
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class SurebetController {
@@ -29,7 +30,9 @@ public class SurebetController {
     @GetMapping("/odds/{fixtureId}/markets")
     public List<MarketOdds> marketOddsList(@PathVariable String fixtureId){
         FixtureOdds getOdds = surebetService.getOdds(fixtureId);
-        return surebetService.marketOddsList(getOdds);
+        Map<String, String> outcomeNames = Map.of("101", "home", "102", "draw", "103", "away");
+        return surebetService.marketOddsList(getOdds, "101", outcomeNames); 
+
     }
     @GetMapping("/odds/{fixtureId}/surebet")
     public List<SurebetOportunity> findSurebets(@PathVariable String fixtureId) {

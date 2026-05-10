@@ -4,9 +4,7 @@ import com.felipebrito.surebet_api.client.OddsApiClient;
 import com.felipebrito.surebet_api.model.*;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class SurebetService {
@@ -24,60 +22,53 @@ public class SurebetService {
         return oddsApiClient.getOdds(fixtureId);
     }
 
-    public List<MarketOdds> marketOddsList(FixtureOdds fixtureOdds) {
+    public List<MarketOdds> marketOddsList(FixtureOdds fixtureOdds, String marketId, Map<String, String> outcomeNames) {
         List<String> allowedBookmakers = List.of("bet365", "betano", "estrelabet", "kto", "superbet", "pinnacle", "blaze", "meridianbet", "betnacional", "betfair");
         List<MarketOdds> result = new ArrayList<>();
+
         for (Map.Entry<String, BookmakerOdds> entry : fixtureOdds.getBookmakerOdds().entrySet()) {
-
             String bookmakerName = entry.getKey();
-            BookmakerOdds bookmakerOdds = entry.getValue();
-            Market market101 = bookmakerOdds.getMarkets().get("101");
             if (!allowedBookmakers.contains(bookmakerName)) continue;
-            if (market101 != null && market101.isMarketActive()) {
-                Outcome home = market101.getOutcomes().get("101");
-                Outcome draw = market101.getOutcomes().get("102");
-                Outcome away = market101.getOutcomes().get("103");
 
-                if (home == null || draw == null || away == null) continue;
+            BookmakerOdds bookmakerOdds = entry.getValue();
+            Market market = bookmakerOdds.getMarkets().get(marketId);
+            if (market == null || !market.isMarketActive()) continue;
 
-                double homeOdds = home.getPlayers().get("0").getPrice();
-                double drawOdds = draw.getPlayers().get("0").getPrice();
-                double awayOdds = away.getPlayers().get("0").getPrice();
-                MarketOdds marketOdds = new MarketOdds();
-                marketOdds.setBookmakerName(bookmakerName);
-                marketOdds.setHomeOdds(homeOdds);
-                marketOdds.setDrawOdds(drawOdds);
-                marketOdds.setAwayOdds(awayOdds);
+            Map<String, Double> outcomes = new HashMap<>();
+            boolean valid = true;
 
-                result.add(marketOdds);
-                marketOdds.setAwayOdds(awayOdds);
-
+            for (Map.Entry<String, String> outcomeEntry : outcomeNames.entrySet()) {
+                String outcomeId = outcomeEntry.getKey();
+                String outcomeName = outcomeEntry.getValue();
+                Outcome outcome = market.getOutcomes().get(outcomeId);
+                if (outcome == null || outcome.getPlayers().get("0") == null) { valid = false; break; }
+                outcomes.put(outcomeName, outcome.getPlayers().get("0").getPrice());
             }
 
+            if (!valid) continue;
 
-
+            MarketOdds marketOdds = new MarketOdds();
+            marketOdds.setBookmakerName(bookmakerName);
+            marketOdds.setOutcomes(outcomes);
+            result.add(marketOdds);
         }
+
         return result;
     }
-    public List<SurebetOportunity> findSurebets(String fixtureId){
+
+    public List<SurebetOportunity> findSurebets(String fixtureId) {
         FixtureOdds fixtureOdds = getOdds(fixtureId);
-        List<MarketOdds> marketOdds = marketOddsList(fixtureOdds);
+        Map<String, String> outcomeNames = Map.of("101", "home", "102", "draw", "103", "away");
+        List<MarketOdds> marketOdds = marketOddsList(fixtureOdds, "101", outcomeNames);
         return surebetCalculator.surebetCalculator(marketOdds);
     }
 
-    public List<StakeResult> calculateStake(String fixtureId, double total){
+    public List<StakeResult> calculateStake(String fixtureId, double total) {
         List<SurebetOportunity> surebets = findSurebets(fixtureId);
         List<StakeResult> result = new ArrayList<>();
-
-        for(SurebetOportunity opportunity : surebets){
+        for (SurebetOportunity opportunity : surebets) {
             result.add(stakeCalculator.calculate(opportunity, total));
         }
-
         return result;
     }
-
-
-
 }
-
-
