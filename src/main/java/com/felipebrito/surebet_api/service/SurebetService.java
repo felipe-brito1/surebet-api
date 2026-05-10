@@ -10,4 +10,8 @@ public class SurebetService {
     public SurebetService(OddsApiClient oddsApiClient) {
         this.oddsApiClient = oddsApiClient;
     }
+
+    public String getOdds(String fixtureId){
+        return oddsApiClient.getOdds(fixtureId);
+    }
 }
