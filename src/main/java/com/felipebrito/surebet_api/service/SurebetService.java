@@ -11,9 +11,11 @@ import java.util.Map;
 @Service
 public class SurebetService {
     private final OddsApiClient oddsApiClient;
+    private final SurebetCalculator surebetCalculator;
 
-    public SurebetService(OddsApiClient oddsApiClient) {
+    public SurebetService(OddsApiClient oddsApiClient, SurebetCalculator surebetCalculator) {
         this.oddsApiClient = oddsApiClient;
+        this.surebetCalculator = surebetCalculator;
     }
 
     public FixtureOdds getOdds(String fixtureId) {
@@ -21,11 +23,14 @@ public class SurebetService {
     }
 
     public List<MarketOdds> marketOddsList(FixtureOdds fixtureOdds) {
+        List<String> allowedBookmakers = List.of("bet365", "betano", "estrelabet", "kto", "superbet", "pinnacle", "blaze", "meridianbet", "betnacional", "betfair");
         List<MarketOdds> result = new ArrayList<>();
         for (Map.Entry<String, BookmakerOdds> entry : fixtureOdds.getBookmakerOdds().entrySet()) {
+
             String bookmakerName = entry.getKey();
             BookmakerOdds bookmakerOdds = entry.getValue();
             Market market101 = bookmakerOdds.getMarkets().get("101");
+            if (!allowedBookmakers.contains(bookmakerName)) continue;
             if (market101 != null && market101.isMarketActive()) {
                 Outcome home = market101.getOutcomes().get("101");
                 Outcome draw = market101.getOutcomes().get("102");
@@ -41,14 +46,21 @@ public class SurebetService {
                 marketOdds.setHomeOdds(homeOdds);
                 marketOdds.setDrawOdds(drawOdds);
                 marketOdds.setAwayOdds(awayOdds);
+
                 result.add(marketOdds);
                 marketOdds.setAwayOdds(awayOdds);
+
             }
 
 
 
         }
         return result;
+    }
+    public List<SurebetOportunity> findSurebets(String fixtureId){
+        FixtureOdds fixtureOdds = getOdds(fixtureId);
+        List<MarketOdds> marketOdds = marketOddsList(fixtureOdds);
+        return surebetCalculator.surebetCalculator(marketOdds);
     }
 
 
