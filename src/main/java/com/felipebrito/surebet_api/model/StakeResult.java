@@ -12,4 +12,7 @@ public class StakeResult {
     private double profit;
     private double totalInvested;
     private double returnAmount;
+    private String marketName;
+    private String homeTeam;
+    private String awayTeam;
 }

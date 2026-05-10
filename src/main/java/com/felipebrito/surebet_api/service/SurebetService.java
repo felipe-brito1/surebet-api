@@ -71,4 +71,14 @@ public class SurebetService {
         }
         return result;
     }
+    public List<StakeResult> findSurebetsByMarket(String fixtureId, String marketId, Map<String, String> outcomeNames, double total) {
+        FixtureOdds fixtureOdds = getOdds(fixtureId);
+        List<MarketOdds> marketOdds = marketOddsList(fixtureOdds, marketId, outcomeNames);
+        List<SurebetOportunity> surebets = surebetCalculator.surebetCalculator(marketOdds);
+        List<StakeResult> result = new ArrayList<>();
+        for (SurebetOportunity opportunity : surebets) {
+            result.add(stakeCalculator.calculate(opportunity, total));
+        }
+        return result;
+    }
 }

@@ -31,7 +31,7 @@ public class SurebetController {
     public List<MarketOdds> marketOddsList(@PathVariable String fixtureId){
         FixtureOdds getOdds = surebetService.getOdds(fixtureId);
         Map<String, String> outcomeNames = Map.of("101", "home", "102", "draw", "103", "away");
-        return surebetService.marketOddsList(getOdds, "101", outcomeNames); 
+        return surebetService.marketOddsList(getOdds, "101", outcomeNames);
 
     }
     @GetMapping("/odds/{fixtureId}/surebet")
@@ -42,5 +42,10 @@ public class SurebetController {
     @GetMapping("/odds/{fixtureId}/stake")
     public List<StakeResult> calculator(@PathVariable String fixtureId, @RequestParam double total){
         return surebetService.calculateStake(fixtureId, total);
+    }
+    @GetMapping("/odds/{fixtureId}/btts")
+    public List<StakeResult> findBtts(@PathVariable String fixtureId, @RequestParam double total){
+        Map<String, String> outcomeNames = Map.of("104", "yes", "105", "no");
+        return surebetService.findSurebetsByMarket(fixtureId, "104", outcomeNames, total);
     }
 }
