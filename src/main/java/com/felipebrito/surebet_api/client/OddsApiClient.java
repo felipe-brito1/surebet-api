@@ -1,6 +1,7 @@
 package com.felipebrito.surebet_api.client;
 
 
+import com.felipebrito.surebet_api.model.FixtureOdds;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -19,10 +20,10 @@ public class OddsApiClient {
     @Value("${odds.api.url}")
     private String baseUrl;
 
-    public String getOdds(String fixtureId){
+    public FixtureOdds getOdds(String fixtureId){
         String url = baseUrl + "/odds?fixtureId=" + fixtureId + "&language=en&verbosity=3&apiKey=" + apiKey;
 
-        return restTemplate.getForObject(url, String.class);
+        return restTemplate.getForObject(url, FixtureOdds.class);
 
     }
 }
